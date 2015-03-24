@@ -1,113 +1,58 @@
-app_list = \
-           DNA_HomeScreen \
-           DNA_News \
-           DNA_HVAC \
-           DNA_Dashboard \
-           DNA_GoogleMaps \
-           DNA_NFC \
-           DNA_Browser \
-           DNA_Weather
+PROJECT = DNA_NFC
+APPNAME = NFC
+WRT_FILES = DNA_common css icon.png index.html config.xml js images README.txt
+VERSION := 0.0.1
+PACKAGE = $(PROJECT)-$(VERSION)
 
-not_installed =\
-           DNA_HelloTizen \
-           DNA_RVITest \
-
-extension_list = extension_common wkb_client_ext most
 ifndef TIZEN_IP
 TIZEN_IP=TizenVTC
 endif
-txtrst=$(tput sgr0) # Text reset
-txtred=$(tput setaf 1) # Red
 
-#to avoid typing a password for each scp or ssh command you need to copy
-#your public key over 
-#
-# ssh-copy-id app@TizenNuc
-#
-# This command will require your password and then you will be able to 
-# use ssh and scp without a password from that user.
+wgtPkg: clean common $(PROJECT).wgt
 
-all: apps extensions
+wgt: $(PROJECT).wgt
 
-autolaunch:
-	scp systemd/DNA_launcher.sh root@$(TIZEN_IP):/usr/bin
-	scp systemd/DNA_Homescreen* root@$(TIZEN_IP):/usr/lib/systemd/user/
-	ssh root@$(TIZEN_IP) "ln -sf /usr/lib/systemd/user/DNA_Homescreen-launchpad-ready.path /usr/lib/systemd/user/tizen-user-middleware.target.wants/"
+kill.xwalk:
+	ssh root@$(TIZEN_IP) "pkill xwalk"
 
-updatepackages:
-	ssh root@$(TIZEN_IP) "rpm -qa" >package_list
+kill.feb1:
+	ssh app@$(TIZEN_IP) "pkgcmd -k JLRPOCX001.HomeScreen"
 
-packagecheck: package_list
-	ssh root@$(TIZEN_IP) "rpm -qa" | diff package_list - ; if [ $$? -ne 0 ] ; then tput setaf 1 ; echo "packages do not match"; tput sgr0 ;exit 1 ; fi
-	tput bold ; echo "packages match"; tput sgr0
+run: install
+	@echo "================ Run ======================="
+	ssh app@$(TIZEN_IP) "export DBUS_SESSION_BUS_ADDRESS='unix:path=/run/user/5000/dbus/user_bus_socket' && xwalkctl | egrep -e $(APPNAME) | awk '{print $1}' | xargs --no-run-if-empty xwalk-launcher -d"
 
-boxcheck: tizen-release
-	ssh root@$(TIZEN_IP) "cat /etc/tizen-release" | diff tizen-release - ; if [ $$? -ne 0 ] ; then tput setaf 1 ; echo "tizen-release version not correct"; tput sgr0 ;exit 1 ; fi
-	
+run.feb1: install.feb1
+	ssh app@$(TIZEN_IP) "app_launcher -s JLRPOCX034.NFC -d "
 
-apps:
-	$(foreach app,$(app_list), make -C $(app);)
-	#cd  HomeScreen && make
-	#cd  Browser && make
-	#cd  Boilerplate && make
-	#cd  News && make
+install.feb1: deploy
+ifndef OBS
+	-ssh app@$(TIZEN_IP) "pkgcmd -u -n JLRPOCX034.NFC -q"
+	ssh app@$(TIZEN_IP) "pkgcmd -i -t wgt -p /home/app/DNA_NFC.wgt -q"
+endif
 
-extensions:
-	$(foreach extension,$(extension_list), make -C $(extension);)
+install: deploy
+ifndef OBS
+	@echo "================ Uninstall ================="
+	ssh app@$(TIZEN_IP) "export DBUS_SESSION_BUS_ADDRESS='unix:path=/run/user/5000/dbus/user_bus_socket' && xwalkctl | egrep -e $(APPNAME) | awk '{print $1}' | xargs --no-run-if-empty xwalkctl -u"
+	@echo "================ Install ==================="
+	ssh app@$(TIZEN_IP) "export DBUS_SESSION_BUS_ADDRESS='unix:path=/run/user/5000/dbus/user_bus_socket' && xwalkctl -i $(PROJECT).wgt"
+endif
 
-install_apps.feb1: boxcheck
-	$(foreach app,$(app_list), make -C $(app) install.feb1 TIZEN_IP=$(TIZEN_IP);)
+deploy: wgtPkg
+ifndef OBS
+	scp $(PROJECT).wgt app@$(TIZEN_IP):
+endif
 
-install_apps: boxcheck
-	$(foreach app,$(app_list), make -C $(app) install TIZEN_IP=$(TIZEN_IP);)
+common: ../DNA_common
+	cp -rf ../DNA_common .
 
-install_obs:
-	@echo "Installing $(PROJECT), stand by..."
-	mkdir -p $(DESTDIR)/opt/usr/apps/.preinstallWidgets
-	$(foreach app,$(app_list), cp $(app)/$(app).wgt $(DESTDIR)/opt/usr/apps/.preinstallWidgets;)
+$(PROJECT).wgt : 
+	zip -r $(PROJECT).wgt $(WRT_FILES)
 
-deploy: deploy_apps
+all: wgt
 
-deploy_apps: boxcheck
-	$(foreach app,$(app_list), make -C $(app) deploy TIZEN_IP=$(TIZEN_IP);)
-	#cd HomeScreen && make deploy TIZEN_IP=192.168.6.53
-	#cd Browser && make deploy TIZEN_IP=192.168.6.53
-	#cd Boilerplate && make deploy TIZEN_IP=192.168.6.53
-	#cd News && make deploy TIZEN_IP=192.168.6.53
-	scp InstallWgts.sh app@$(TIZEN_IP):/home/app/
-	ssh app@$(TIZEN_IP) ./InstallWgts.sh
-
-deploy_extensions: boxcheck
-	$(foreach extension,$(extension_list), make -C $(extension) deploy TIZEN_IP=$(TIZEN_IP);)
-
-run.feb1: install_apps.feb1
-	make -C DNA_HomeScreen run.feb1
-
-run: boxcheck
-	ssh app@$(TIZEN_IP) "export DBUS_SESSION_BUS_ADDRESS='unix:path=/run/user/5000/dbus/user_bus_socket' && xwalkctl | egrep -e 'Home Screen' | awk '{print $1}' | xargs --no-run-if-empty xwalk-launcher -d"
-
-clean: clean_apps clean_extensions
-
-clean_apps:
-	$(foreach app,$(app_list), make -C $(app) clean;)
-	#cd HomeScreen && make clean
-	#cd Boilerplate && make clean
-	#cd Browser && make clean
-	#cd News && make clean
-	cd Leap && make clean
-	#cd GestureGame && make clean
-
-clean_extensions: 
-	$(foreach extension,$(extension_list), make -C $(extension) clean;)
-
-install: boxcheck
-	cd HomeScreen && make install
-
-update.extention: boxcheck
-	-ssh root@$(TIZEN_IP) "zypper -n rr updated_repo"
-	#ssh root@$(TIZEN_IP) "zypper -n addrepo -G https://download.tizen.org/releases/daily/tizen/ivi/latest/repos/atom/packages/ updated_repo"
-	ssh root@$(TIZEN_IP) "zypper -n addrepo -G https://download.tizen.org/releases/daily/tizen/ivi/tizen-ivi_20150115.2/repos/atom/packages/ updated_repo"
-	ssh root@$(TIZEN_IP) "zypper -n refresh"
-	ssh root@$(TIZEN_IP) "zypper -n install tizen-extensions-crosswalk"
-
+clean:
+	-rm $(PROJECT).wgt
+	-rm -rf DNA_common
 

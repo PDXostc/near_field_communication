@@ -13,24 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-Name: AGL App Suite Release
+Name: NFC(Near Field Communcation)
 Version: XW_TizenIVI3_0_01FEB_AGL_05MAR2015
-Base Image: tizen-3.0-ivi_20150201.3(http://download.tizen.org/releases/milestone/tizen/ivi-3.0/tizen-3.0-ivi_20150201.3/images/atom/ivi-mbr-i586/)
-Maintainer: Art McGee <amcgee7@jaguarlandrover.com>
+Maintainer: Jeffery Eastwood <jeastwo1@jaguarlandrover.com>
 Mailing list: dev@lists.tizen.org
-
-Released Apps:
-           NAME:FOLDER
-           HomeScreen:DNA_HomeScreen
-           News:DNA_News
-           HVAC:DNA_HVAC
-           Dashboard:DNA_Dashboard
-           Google Maps:DNA_Navigation
-           NFC:DNA_NFC
-           Browser:DNA_Browser
-           Weather:DNA_Weather
-
-See Indiviual apps README.txt for details for each app.
 
 Build Instructions: 
 
@@ -44,39 +30,11 @@ Set the TIZEN_IP enviroment varable to the ip of target. or set TizenVTC host na
 
 	make run.feb1 - To build, install and run on the platform
 
-gbs build process
-
-	This is the initial repo for all projects combined
-
-	_common's and HomeScreen added.
-
-	Makefiles should work for HomeScreen but spec files need to be updated so an rpm build won't work
-
-	This repository contains the POC applications and extensions available
-	for AGL Application Suite.
-
-	To build, use:
-
-		> gbs build -A i586
-
-	-- Applications
-
-	All applications make use of the "common" repository for artifacts 
-	common across every POC.
-
-	-- Extensions
-
-	All extensions are identified with the _ext suffix of their directory
-	name. 
-
-	extension_common is a static library that must be linked into all
-	extensions.
-
-	extension_tools contains the tool to create the XWalk boilerplate code from
-	the javascript template
-
-
 KnownIssues: 
-
-
-
+	Bug	TC-1243	Buxton must be used in package platform/core/connectivity/nfc-manager-neard
+	Bug	TC-1178	Remove Flora license from package platform/core/connectivity/nfc-manager-neard
+	Bug	TC-263	Neard bluetooth pairing does not work by default
+	Bug	TC-48	[3.0] Kernel backtrace when tethering connection created
+	Bug	TC-214	capi-system-sensor (and other capi packages) doesn't report its version number
+	Bug	TC-199	Support emulator image builds for Tizen IVI
+	Bug	TC-1248	Native keyboard doesn’t exit after entering text
