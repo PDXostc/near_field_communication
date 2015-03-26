@@ -32,7 +32,6 @@ make install_obs "OBS=1" DESTDIR="%{?buildroot}"
 
 %post
 su app -c "pkgcmd -i -t wgt -p /opt/usr/apps/.preinstallWidgets/JLRPOCX034.NFC.wgt -q"
-fi
 
 %postun
 su app -c "pkgcmd -u -n JLRPOCX034 -q"
