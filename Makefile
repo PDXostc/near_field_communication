@@ -1,4 +1,4 @@
-PROJECT = DNA_NFC
+PROJECT = JLRPOCX034.NFC
 APPNAME = NFC
 WRT_FILES = DNA_common css icon.png index.html config.xml js images README.txt
 VERSION := 0.0.1
@@ -48,6 +48,9 @@ ifndef OBS
 	ssh app@$(TIZEN_IP) "export DBUS_SESSION_BUS_ADDRESS='unix:path=/run/user/5000/dbus/user_bus_socket' && xwalkctl -i $(PROJECT).wgt"
 endif
 
+install_obs: 
+	mkdir -p ${DESTDIR}/opt/usr/apps/.preinstallWidgets
+	cp -r JLRPOCX034.NFC.wgt ${DESTDIR}/opt/usr/apps/.preinstallWidgets/ 
 $(PROJECT).wgt : wgt
 
 deploy: dev
@@ -69,16 +72,20 @@ clean:
 	rm -f $(PROJECT).wgt
 	git clean -f
 
-common: /opt/usr/apps/common
-	cp -r /opt/usr/apps/common/js/* js/
-	cp -r /opt/usr/apps/common/css/* css/
+common: /opt/usr/apps/common-apps
+	cp -r /opt/usr/apps/common-apps DNA_common
 
-/opt/usr/apps/common:
+/opt/usr/apps/common-apps:
 	@echo "Please install Common Assets"
 	exit 1
 
 dev-common: ../common-app
 	cp -rf ../common-app ./DNA_common
+
+../common-app:
+	#@echo "Please checkout Common Assets"
+	#exit 1
+	git clone  git@github.com:PDXostc/common-app.git ../common-app
 
 ../DNA_common:
 	@echo "Please checkout Common Assets"
