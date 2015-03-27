@@ -37,7 +37,7 @@ run.feb1: install.feb1
 install.feb1: deploy
 ifndef OBS
 	-ssh app@$(TIZEN_IP) "pkgcmd -u -n JLRPOCX034.NFC -q"
-	ssh app@$(TIZEN_IP) "pkgcmd -i -t wgt -p /home/app/DNA_NFC.wgt -q"
+	ssh app@$(TIZEN_IP) "pkgcmd -i -t wgt -p /home/app/JLRPOCX034.NFC.wgt -q"
 endif
 
 install: deploy
@@ -81,6 +81,8 @@ common: /opt/usr/apps/common-apps
 
 dev-common: ../common-app
 	cp -rf ../common-app ./DNA_common
+	rm -fr ./DNA_common/.git
+	rm -fr ./DNA_common/common-app/.git
 
 ../common-app:
 	#@echo "Please checkout Common Assets"
