@@ -22,7 +22,7 @@ kill.xwalk:
 	ssh root@$(TIZEN_IP) "pkill xwalk"
 
 kill.feb1:
-	ssh app@$(TIZEN_IP) "pkgcmd -k JLRPOCX001.HomeScreen"
+	ssh app@$(TIZEN_IP) "pkgcmd -k JLRPOCX034.NFC"
 
 run: install
 	@echo "================ Run ======================="
@@ -38,10 +38,12 @@ install.feb1: deploy
 ifndef OBS
 	-ssh app@$(TIZEN_IP) "pkgcmd -u -n JLRPOCX034.NFC -q"
 	ssh app@$(TIZEN_IP) "pkgcmd -i -t wgt -p /home/app/JLRPOCX034.NFC.wgt -q"
+else
+	cp -r $(PROJECT).wgt ${DESTDIR}/opt/usr/apps/.preinstallWidgets/
 endif
 
-install: deploy
 ifndef OBS
+install: deploy
 	@echo "================ Uninstall ================="
 	ssh app@$(TIZEN_IP) "export DBUS_SESSION_BUS_ADDRESS='unix:path=/run/user/5000/dbus/user_bus_socket' && xwalkctl | egrep -e $(APPNAME) | awk '{print $1}' | xargs --no-run-if-empty xwalkctl -u"
 	@echo "================ Install ==================="
@@ -51,6 +53,7 @@ endif
 install_obs: 
 	mkdir -p ${DESTDIR}/opt/usr/apps/.preinstallWidgets
 	cp -r JLRPOCX034.NFC.wgt ${DESTDIR}/opt/usr/apps/.preinstallWidgets/ 
+
 $(PROJECT).wgt : wgt
 
 deploy: dev
