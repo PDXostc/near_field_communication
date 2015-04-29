@@ -6,12 +6,17 @@ Group: Applications/System
 License: Apache-2.0
 URL: http://www.tizen.org
 Source0: %{name}-%{version}.tar.bz2
-BuildRequires: common
+BuildRequires: common-apps
 BuildRequires: zip
 BuildRequires:  desktop-file-utils
-Requires:   wrt-installer
-Requires:   wrt-plugins-ivi
 
+Requires: pkgmgr
+Requires: crosswalk
+Requires: tizen-extensions-crosswalk
+Requires: pkgmgr-server
+Requires: model-config-ivi
+Requires: tizen-middleware-units
+Requires: tizen-platform-config
 
 %description
 A proof of concept HTML5 UI for the Tizen NFC API
@@ -20,21 +25,17 @@ A proof of concept HTML5 UI for the Tizen NFC API
 %setup -q -n %{name}-%{version}
 
 %build
-cd wgt;
 make wgtPkg
 
 %install
-cd wgt;
-%make_install
+make install_obs "OBS=1" DESTDIR="%{?buildroot}"
 
 %post
-if [ -f /opt/usr/apps/.preinstallWidgets/preinstallDone ]; then
-	    wrt-installer -i /opt/usr/apps/.preinstallWidgets/NFC.wgt;
-fi
+su app -c "pkgcmd -i -t wgt -p /opt/usr/apps/.preinstallWidgets/JLRPOCX034.NFC.wgt -q"
 
 %postun
-wrt-installer -un intelPoc22.NFC
+su app -c "pkgcmd -u -n JLRPOCX034 -q"
 
 %files
 %defattr(-,root,root,-)
-/opt/usr/apps/.preinstallWidgets/NFC.wgt
+/opt/usr/apps/.preinstallWidgets/JLRPOCX034.NFC.wgt
